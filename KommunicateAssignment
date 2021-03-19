@@ -1,3 +1,4 @@
+package com.example.KommunicateJava.Task;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -5,9 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-
-public class ParkingLotTask {
-
+public class New {
 	public static void main(String[] args) {
 		Integer lotSize = 0;
 		String carPlate = "";
@@ -41,6 +40,15 @@ public class ParkingLotTask {
 			} else if ("park".equals(input)) {
 				if(!slotsToLeaveList.isEmpty()) {
 					minEmptySlot = Collections.min(slotsToLeaveList);
+					if(carPlateVsSlot.containsKey(minEmptySlot)) {
+						slotsToLeaveList.remove(minEmptySlot);
+					}
+					if(!slotsToLeaveList.isEmpty()) {
+						minEmptySlot = Collections.min(slotsToLeaveList);
+					}
+				}
+				if(slotsToLeaveList.isEmpty()) {
+					minEmptySlot = lotSize+1;
 				}
 				carPlate = scan.next();
 				carColour = scan.next();
@@ -56,7 +64,7 @@ public class ParkingLotTask {
 					carMap.put(carColour, existingPlatesAgainstColour); // all plates against 1 colour
 				}
 				if (!carPlateVsSlot.containsKey(slot)) {
-					if (slot <= lotSize && (null == slotToleave || slotToleave > slot || slotToleave == slot)) {
+					if (slot <= lotSize && (null == minEmptySlot || minEmptySlot > slot || minEmptySlot == slot)) {
 						carPlateVsSlot.put(slot, carPlate);
 						allSlotList.add(slot);
 						if (null == carColourVsSlot.get(carColour)) {
@@ -83,49 +91,7 @@ public class ParkingLotTask {
 							carColourVsSlot.put(carColour, existingSlotList); // to get all slots against 1 colour
 						}
 						slotVsColour.put(minEmptySlot, carColour);
-						System.out.println("Allocated slot number: " + minEmptySlot);
-					} else {
-						carPlateList.remove(carPlate);
-						carColourList.remove(carColour); // only for status command
-						List<String> plateToRemoveFrom = carMap.get(carColour);
-						plateToRemoveFrom.remove(carPlate);
-						if (plateToRemoveFrom.isEmpty()) {
-							carMap.remove(carColour);
-						} else {
-							carMap.put(carColour, plateToRemoveFrom);
-						}
-						System.out.println("Sorry, parking lot is full");
-					}
-				} else {
-					slot += 1;
-					if (!carPlateVsSlot.containsKey(slot) && slot <= lotSize
-							&& (null == slotToleave || slotToleave > slot)) {
-						carPlateVsSlot.put(slot, carPlate);
-						allSlotList.add(slot);
-						if (null == carColourVsSlot.get(carColour)) {
-							List<Integer> slotList = new ArrayList<Integer>();
-							slotList.add(slot);
-							carColourVsSlot.put(carColour, slotList); // to get all slots against 1 colour
-						} else {
-							List<Integer> existingSlotList = carColourVsSlot.get(carColour);
-							existingSlotList.add(slot);
-							carColourVsSlot.put(carColour, existingSlotList); // to get all slots against 1 colour
-						}
-						slotVsColour.put(slot, carColour);
-						System.out.println("Allocated slot number: " + slot);
-					} else if (minEmptySlot < slot && !carPlateVsSlot.containsKey(minEmptySlot)) {
-						carPlateVsSlot.put(minEmptySlot, carPlate);
-						allSlotList.add(minEmptySlot);
-						if (null == carColourVsSlot.get(carColour)) {
-							List<Integer> slotList = new ArrayList<Integer>();
-							slotList.add(minEmptySlot);
-							carColourVsSlot.put(carColour, slotList); // to get all slots against 1 colour
-						} else {
-							List<Integer> existingSlotList = carColourVsSlot.get(carColour);
-							existingSlotList.add(minEmptySlot);
-							carColourVsSlot.put(carColour, existingSlotList); // to get all slots against 1 colour
-						}
-						slotVsColour.put(minEmptySlot, carColour);
+						slot -= 1;
 						System.out.println("Allocated slot number: " + minEmptySlot);
 					} else {
 						carPlateList.remove(carPlate);
@@ -140,6 +106,7 @@ public class ParkingLotTask {
 						System.out.println("Sorry, parking lot is full");
 					}
 				}
+				slot += 1;
 				input = scan.next();
 			} else if ("leave".equals(input)) {
 				slotToleave = scan.nextInt();
@@ -205,7 +172,6 @@ public class ParkingLotTask {
 				commandCheck = true;
 			}
 		}
-	
 		if(commandCheck) {
 			System.out.println("Invalid Command");
 			System.out.println("Please use following command only:-");
@@ -214,7 +180,6 @@ public class ParkingLotTask {
 							"slot_numbers_for_cars_with_colour", "slot_number_for_registration_number", "exit"));
 			System.out.println(commands);
 		}
-		
 		scan.close();
 	}
 }
