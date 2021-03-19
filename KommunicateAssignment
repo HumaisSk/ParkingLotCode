@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 public class New {
 	public static void main(String[] args) {
@@ -18,9 +19,9 @@ public class New {
 		List<Integer> allSlotList = new ArrayList<>();
 		List<String> carColourList = new ArrayList<>();
 		Map<String, List<String>> carMap = new HashMap<>();
-		Map<Integer, String> carPlateVsSlot = new HashMap<>();
+		Map<Integer, String> carPlateVsSlot = new TreeMap<>();
 		Map<String, List<Integer>> carColourVsSlot = new HashMap<>();
-		Map<Integer, String> slotVsColour = new HashMap<>();
+		Map<Integer, String> slotVsColour = new TreeMap<>();
 		List<Integer> slotsToLeaveList = new ArrayList<Integer>();
 		Boolean commandCheck = false;
 		Integer minEmptySlot = 0;
@@ -136,11 +137,20 @@ public class New {
 				input = scan.next();
 			} else if ("status".equals(input)) {
 				System.out.println("Slot No.");
+				Collections.sort(allSlotList);
 				allSlotList.forEach(a -> System.out.println(a));
 				System.out.println("Registration No");
-				carPlateList.forEach(a -> System.out.println(a));
+				Iterator<Map.Entry<Integer, String>> itr = carPlateVsSlot.entrySet().iterator();
+				while (itr.hasNext()) {
+					Map.Entry<Integer, String> entry = itr.next();
+					System.out.println(entry.getValue());
+				}
 				System.out.println("Colour");
-				carColourList.forEach(a -> System.out.println(a));
+				Iterator<Map.Entry<Integer, String>> iter = slotVsColour.entrySet().iterator();
+				while (iter.hasNext()) {
+					Map.Entry<Integer, String> entry = iter.next();
+					System.out.println(entry.getValue());
+				}
 				input = scan.next();
 			} else if ("registration_numbers_for_cars_with_colour".equals(input)) {
 				String AllCarsWithColour = scan.next();
