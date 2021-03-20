@@ -1,180 +1,127 @@
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
 
-public class New {
+public class ParkingLotTask {
 	public static void main(String[] args) {
 		Integer lotSize = 0;
-		String carPlate = "";
-		String carColour = "";
-		Integer slot = 0;
-		Integer slotToleave = null;
-		Scanner scan = new Scanner(System.in);
-		List<String> carPlateList = new ArrayList<>();
-		List<Integer> allSlotList = new ArrayList<>();
-		List<String> carColourList = new ArrayList<>();
-		Map<String, List<String>> carMap = new HashMap<>();
-		Map<Integer, String> carPlateVsSlot = new TreeMap<>();
-		Map<String, List<Integer>> carColourVsSlot = new HashMap<>();
-		Map<Integer, String> slotVsColour = new TreeMap<>();
-		List<Integer> slotsToLeaveList = new ArrayList<Integer>();
+		Integer slot = 1;
+		Integer slotLeft = null;
 		Boolean commandCheck = false;
-		Integer minEmptySlot = 0;
+		Integer createCommandCounter = 0;
+		Map<Integer,String> carDetails = new TreeMap<>();
+		List<Integer> allSlotsLeft = new ArrayList<>();
+		Scanner scan = new Scanner(System.in);
 		String input = scan.next();
 		while (!"exit".equals(input) && !commandCheck) {
 			if ("create_parking_lot".equals(input)) {
 				lotSize = scan.nextInt();
-				if (lotSize > 0) {
-					slot = 1;
-				} else {
+				if(createCommandCounter > 0) {
+					System.out.println("create_parking_lot command already invoked before, cannot recreate");
+				}else if (lotSize <= 0) {
 					System.out.println("Cannot create a parking lot with " + lotSize + " slots");
 					System.out.println("Interactive command prompt exited");
 					break;
+				}else {
+					createCommandCounter = 1;
+					System.out.println("Created a parking lot with " + lotSize + " slots");
 				}
-				System.out.println("Created a parking lot with " + lotSize + " slots");
 				input = scan.next();
 			} else if ("park".equals(input)) {
-				if(!slotsToLeaveList.isEmpty()) {
-					minEmptySlot = Collections.min(slotsToLeaveList);
-					if(carPlateVsSlot.containsKey(minEmptySlot)) {
-						slotsToLeaveList.remove(minEmptySlot);
-					}
-					if(!slotsToLeaveList.isEmpty()) {
-						minEmptySlot = Collections.min(slotsToLeaveList);
-					}
+				String carReg = scan.next();
+				String carColour = scan.next();
+				Integer closestSlot = 0;
+				if(!allSlotsLeft.isEmpty()) {
+					closestSlot = Collections.min(allSlotsLeft);
+				}else {
+					closestSlot = lotSize + 1;
 				}
-				if(slotsToLeaveList.isEmpty()) {
-					minEmptySlot = lotSize+1;
-				}
-				carPlate = scan.next();
-				carColour = scan.next();
-				carPlateList.add(carPlate);
-				carColourList.add(carColour); // only for status command
-				if (null == carMap.get(carColour)) {
-					List<String> carPlatesAgainstColour = new ArrayList<>();
-					carPlatesAgainstColour.add(carPlate);
-					carMap.put(carColour, carPlatesAgainstColour); // all plates against 1 colour
+				if(slot <= lotSize && slot <= closestSlot && !carDetails.containsKey(slot)) {
+					carDetails.put(slot, carReg + " " + carColour);
+					System.out.println("Allocated slot number: " + slot);
+				} else if(closestSlot <= lotSize && closestSlot < slot && !carDetails.containsKey(closestSlot)) {
+					carDetails.put(closestSlot, carReg + " " + carColour);
+					allSlotsLeft.remove(closestSlot);
+					slot -= 1;
+					System.out.println("Allocated slot number: " + closestSlot);
 				} else {
-					List<String> existingPlatesAgainstColour = carMap.get(carColour);
-					existingPlatesAgainstColour.add(carPlate);
-					carMap.put(carColour, existingPlatesAgainstColour); // all plates against 1 colour
-				}
-				if (!carPlateVsSlot.containsKey(slot)) {
-					if (slot <= lotSize && (null == minEmptySlot || minEmptySlot > slot || minEmptySlot == slot)) {
-						carPlateVsSlot.put(slot, carPlate);
-						allSlotList.add(slot);
-						if (null == carColourVsSlot.get(carColour)) {
-							List<Integer> slotList = new ArrayList<Integer>();
-							slotList.add(slot);
-							carColourVsSlot.put(carColour, slotList); // to get all slots against 1 colour
-						} else {
-							List<Integer> existingSlotList = carColourVsSlot.get(carColour);
-							existingSlotList.add(slot);
-							carColourVsSlot.put(carColour, existingSlotList); // to get all slots against 1 colour
-						}
-						slotVsColour.put(slot, carColour); // to get colour in status call
-						System.out.println("Allocated slot number: " + slot);
-					} else if (minEmptySlot < slot && !carPlateVsSlot.containsKey(minEmptySlot)) {
-						carPlateVsSlot.put(minEmptySlot, carPlate);
-						allSlotList.add(minEmptySlot);
-						if (null == carColourVsSlot.get(carColour)) {
-							List<Integer> slotList = new ArrayList<Integer>();
-							slotList.add(minEmptySlot);
-							carColourVsSlot.put(carColour, slotList); // to get all slots against 1 colour
-						} else {
-							List<Integer> existingSlotList = carColourVsSlot.get(carColour);
-							existingSlotList.add(minEmptySlot);
-							carColourVsSlot.put(carColour, existingSlotList); // to get all slots against 1 colour
-						}
-						slotVsColour.put(minEmptySlot, carColour);
-						slot -= 1;
-						System.out.println("Allocated slot number: " + minEmptySlot);
-					} else {
-						carPlateList.remove(carPlate);
-						carColourList.remove(carColour); // only for status command
-						List<String> plateToRemoveFrom = carMap.get(carColour);
-						plateToRemoveFrom.remove(carPlate);
-						if (plateToRemoveFrom.isEmpty()) {
-							carMap.remove(carColour);
-						} else {
-							carMap.put(carColour, plateToRemoveFrom);
-						}
-						System.out.println("Sorry, parking lot is full");
-					}
+					slot -= 1;
+					System.out.println("Sorry, parking lot is full");
 				}
 				slot += 1;
 				input = scan.next();
 			} else if ("leave".equals(input)) {
-				slotToleave = scan.nextInt();
-				slotsToLeaveList.add(slotToleave);
-				allSlotList.remove(slotToleave);
-				String carColourRemoved = slotVsColour.get(slotToleave);
-				carColourList.remove(carColourRemoved);
-				slotVsColour.remove(slotToleave);
-				List<Integer> allSlots = carColourVsSlot.get(carColourRemoved);
-				allSlots.remove(slotToleave);
-				if (allSlots.isEmpty()) {
-					carColourVsSlot.remove(carColourRemoved);
-				} else {
-					carColourVsSlot.put(carColourRemoved, allSlots);
-				}
-				String carPlateLeaving = carPlateVsSlot.get(slotToleave);
-				carPlateList.remove(carPlateLeaving);
-				carPlateVsSlot.remove(slotToleave);
-				List<String> allPlates = carMap.get(carColourRemoved);
-				allPlates.remove(carPlateLeaving);
-				if (allPlates.isEmpty()) {
-					carMap.remove(carColourRemoved);
-				} else {
-					carMap.put(carColourRemoved, allPlates);
-				}
-				System.out.println("Slot number " + slotToleave + " is free");
+				slotLeft = scan.nextInt();
+				allSlotsLeft.add(slotLeft);
+				carDetails.remove(slotLeft);
+				System.out.println("Slot number " + slotLeft + " is free");
 				input = scan.next();
 			} else if ("status".equals(input)) {
-				System.out.println("Slot No.");
-				Collections.sort(allSlotList);
-				allSlotList.forEach(a -> System.out.println(a));
-				System.out.println("Registration No");
-				Iterator<Map.Entry<Integer, String>> itr = carPlateVsSlot.entrySet().iterator();
-				while (itr.hasNext()) {
-					Map.Entry<Integer, String> entry = itr.next();
-					System.out.println(entry.getValue());
-				}
-				System.out.println("Colour");
-				Iterator<Map.Entry<Integer, String>> iter = slotVsColour.entrySet().iterator();
+				List<Integer> allSlots = new ArrayList<Integer>();
+				List<String> allCarRegs = new ArrayList<String>();
+				List<String> allCarColour = new ArrayList<String>();
+				String value = null;
+				String regNo = null;
+				String colour = null;
+				Iterator<Map.Entry<Integer, String>> iter = carDetails.entrySet().iterator();
 				while (iter.hasNext()) {
 					Map.Entry<Integer, String> entry = iter.next();
-					System.out.println(entry.getValue());
+					allSlots.add(entry.getKey());
+					value = entry.getValue();
+					regNo = value.substring(0, value.indexOf(" ", 0));
+					allCarRegs.add(regNo);
+					colour = value.substring(value.indexOf(" ", 0) + 1);
+					allCarColour.add(colour);
 				}
+				System.out.println("Slot No.");
+				allSlots.forEach(a -> System.out.println(a));
+				System.out.println("Registration No");
+				allCarRegs.forEach(a -> System.out.println(a));
+				System.out.println("Colour");
+				allCarColour.forEach(a -> System.out.println(a));
 				input = scan.next();
 			} else if ("registration_numbers_for_cars_with_colour".equals(input)) {
-				String AllCarsWithColour = scan.next();
-				List<String> AllRegWithSameColour = carMap.get(AllCarsWithColour);
-				AllRegWithSameColour.forEach(a -> System.out.print(a + " "));
-				input = scan.next();
-			} else if ("slot_numbers_for_cars_with_colour".equals(input)) {
-				String AllSlotsWithCarColour = scan.next();
-				List<Integer> listOfSlots = carColourVsSlot.get(AllSlotsWithCarColour);
-				listOfSlots.forEach(a -> System.out.print(a + " "));
-				input = scan.next();
-			} else if ("slot_number_for_registration_number".equals(input)) {
-				String plateNo = scan.next();
-				Integer slotNo = null;
-				Iterator<Map.Entry<Integer, String>> itr = carPlateVsSlot.entrySet().iterator();
-				while (itr.hasNext()) {
-					Map.Entry<Integer, String> entry = itr.next();
-					if (entry.getValue().equals(plateNo)) {
-						slotNo = entry.getKey();
+				String inpColour = scan.next();
+				String value = null;
+				Iterator<Map.Entry<Integer, String>> iter = carDetails.entrySet().iterator();
+				while (iter.hasNext()) {
+					Map.Entry<Integer, String> entry = iter.next();
+					value = entry.getValue();
+					if(value.substring(value.indexOf(" ", 0) + 1).equals(inpColour)) {
+						System.out.print(value.substring(0, value.indexOf(" ", 0) + 1) + " ");
 					}
 				}
-				if (null != slotNo) {
-					System.out.println(slotNo);
-				} else {
+				input = scan.next();
+			} else if ("slot_numbers_for_cars_with_colour".equals(input)) {
+				String inpColour = scan.next();
+				String value = null;
+				Iterator<Map.Entry<Integer, String>> iter = carDetails.entrySet().iterator();
+				while (iter.hasNext()) {
+					Map.Entry<Integer, String> entry = iter.next();
+					value = entry.getValue();
+					if(value.substring(value.indexOf(" ", 0) + 1).equals(inpColour)) {
+						System.out.print(entry.getKey() + " ");
+					}
+				}
+				input = scan.next();
+			} else if ("slot_number_for_registration_number".equals(input)) {
+				String regNoForSlot = scan.next();
+				String value = null;
+				Integer count = 0;
+				Iterator<Map.Entry<Integer, String>> iter = carDetails.entrySet().iterator();
+				while (iter.hasNext()) {
+					Map.Entry<Integer, String> entry = iter.next();
+					value = entry.getValue();
+					if(value.substring(0, value.indexOf(" ", 0)).equals(regNoForSlot)) {
+						System.out.println(entry.getKey());
+						count = 1;
+					}
+				}
+				if(count == 0) {
 					System.out.println("Not found");
 				}
 				input = scan.next();
@@ -184,11 +131,7 @@ public class New {
 		}
 		if(commandCheck) {
 			System.out.println("Invalid Command");
-			System.out.println("Please use following command only:-");
-			List<String> commands = new ArrayList<>(
-					List.of("create_parking_lot", "park", "leave", "status", "registration_numbers_for_cars_with_colour",
-							"slot_numbers_for_cars_with_colour", "slot_number_for_registration_number", "exit"));
-			System.out.println(commands);
+			System.out.println("Interactive command prompt exited");
 		}
 		scan.close();
 	}
